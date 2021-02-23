@@ -1,9 +1,11 @@
 package com.imooc.api.controller.user;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Api(value = "controller的标题",tags = {"带有xx功能的Controller"})
 public interface HelloControllerApi {
     /**
      * api 的作用：
@@ -36,6 +38,7 @@ public interface HelloControllerApi {
      * 综上所述，如此的做法，可以提高多服务的项目可扩展性。
      */
 
+    @ApiOperation(value = "hello方法的接口",notes = "Hello方法的接口",httpMethod = "GET")
     @RequestMapping("/hello")
     public Object hello();
 
