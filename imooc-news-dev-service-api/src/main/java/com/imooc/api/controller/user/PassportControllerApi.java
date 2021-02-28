@@ -21,7 +21,7 @@ public interface PassportControllerApi {
      */
     @ApiOperation(value = "获得短信验证码",notes = "获得短信验证码",httpMethod = "GET")
     @GetMapping("/getSMSCode")
-    public GraceJSONResult getSMSCode(String mobile, HttpServletRequest request);
+    public GraceJSONResult getSMSCode(@RequestParam String mobile, HttpServletRequest request);
 
     @ApiOperation(value = "一键注册登录接口", notes="一键注册登录接口",httpMethod = "POST")
     @PostMapping("/doLogin")

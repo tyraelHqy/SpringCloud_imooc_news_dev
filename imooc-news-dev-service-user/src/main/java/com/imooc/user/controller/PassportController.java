@@ -3,8 +3,11 @@ package com.imooc.user.controller;
 import com.imooc.api.BaseController;
 import com.imooc.api.controller.user.PassportControllerApi;
 import com.imooc.bo.RegistLoginBO;
+import com.imooc.enums.UserStatus;
 import com.imooc.grace.result.GraceJSONResult;
 import com.imooc.grace.result.ResponseStatusEnum;
+import com.imooc.pojo.AppUser;
+import com.imooc.user.service.UserService;
 import com.imooc.utils.IPUtil;
 import com.imooc.utils.SMSUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +30,9 @@ public class PassportController extends BaseController implements PassportContro
 
     @Autowired
     private SMSUtils smsUtils;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public GraceJSONResult getSMSCode(String mobile, HttpServletRequest request) {
@@ -66,6 +71,17 @@ public class PassportController extends BaseController implements PassportContro
             return GraceJSONResult.errorCustom(ResponseStatusEnum.SMS_CODE_ERROR);
         }
         logger.info("验证码正确， "+mobile+" 登录成功");
-        return GraceJSONResult.ok();
+
+        // 2. 查询数据库，判断该用户是否注册
+        AppUser user = userService.queryMobileIsExist(mobile);
+
+        if(user != null && user.getActiveStatus()== UserStatus.FROZEN.type){
+            //如果用户不为空，并且状态为冻结，则直接抛出异常，禁止登陆
+            return GraceJSONResult.errorCustom(ResponseStatusEnum.USER_FROZEN);
+        }else if(user == null){
+            // 如果用户没有注册过，则为null，需要注册信息入库
+            user = userService.createUser(mobile);
+        }
+        return GraceJSONResult.ok(user);
     }
 }
