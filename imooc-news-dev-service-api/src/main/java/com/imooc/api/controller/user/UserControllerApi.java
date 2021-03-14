@@ -1,6 +1,7 @@
 package com.imooc.api.controller.user;
 
 import com.imooc.bo.RegistLoginBO;
+import com.imooc.bo.UpdateUserInfoBO;
 import com.imooc.grace.result.GraceJSONResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,11 +17,15 @@ import javax.validation.Valid;
 
 public interface UserControllerApi {
 
+    @ApiOperation(value = "获得用户账户信息",notes = "获得用户账户信息",httpMethod = "POST")
+    @PostMapping("/getAccountInfo")
+    public GraceJSONResult getAccountInfo(@RequestParam String userId);
+
     /**
      * 获得短信验证码
      * @return
      */
-    @ApiOperation(value = "获得用户账户信息",notes = "获得用户账户信息",httpMethod = "POST")
-    @PostMapping("/getAccountInfo")
-    public GraceJSONResult getAccountInfo(@RequestParam String userId);
+    @ApiOperation(value = "完善用户信息",notes = "获得用户账户信息",httpMethod = "POST")
+    @PostMapping("/updateUserInfo")
+    public GraceJSONResult getAccountInfo(@RequestBody @Valid UpdateUserInfoBO updateUserInfoBO, BindingResult result);
 }
