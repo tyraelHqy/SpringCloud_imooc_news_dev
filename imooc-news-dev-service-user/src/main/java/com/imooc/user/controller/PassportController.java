@@ -18,10 +18,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 public class PassportController extends BaseController implements PassportControllerApi {
@@ -55,7 +55,7 @@ public class PassportController extends BaseController implements PassportContro
     }
 
     @Override
-    public GraceJSONResult doLogin(@Valid RegistLoginBO registLoginBO, BindingResult bindingResult) {
+    public GraceJSONResult doLogin(@Valid RegistLoginBO registLoginBO, BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) {
         // 0.判断BingdingResult中是否保存了错误的验证信息，如果有，则需要返回
         if(bindingResult.hasErrors()){
             Map<String, String> map = getErrors(bindingResult);
@@ -82,6 +82,23 @@ public class PassportController extends BaseController implements PassportContro
             // 如果用户没有注册过，则为null，需要注册信息入库
             user = userService.createUser(mobile);
         }
-        return GraceJSONResult.ok(user);
+
+        // 3. 保存用户分布式会话的相关操作
+        int userActiveStatus = user.getActiveStatus();
+        if(userActiveStatus != UserStatus.FROZEN.type){
+            // 保存token到redis
+            String uToken = UUID.randomUUID().toString();
+            redis.set(REDIS_USER_TOKEN+":"+user.getId(),uToken);
+
+            // 保存用户id和token至cookie中
+            setCookie(request,response,"uToken",uToken,COOKIE_MONTH);
+            setCookie(request,response,"uid",user.getId(),COOKIE_MONTH);
+        }
+
+        // 4. 用户登录或注册成功以后，需要删除redis中的短信验证码，验证码只能够使用一次，用过之后则作废
+        redis.del(MOBILE_SMSCODE + ":" + mobile);
+
+        // 5. 返回用户状态
+        return GraceJSONResult.ok(user.getActiveStatus());
     }
 }
