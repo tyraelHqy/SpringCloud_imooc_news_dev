@@ -14,6 +14,9 @@ public interface UserService {
      */
     public AppUser createUser(String mobile);
 
-
+    /**
+     * 根据用户主键Id查询y用户信息
+     */
+    public AppUser getUser(String userId);
 
 }
