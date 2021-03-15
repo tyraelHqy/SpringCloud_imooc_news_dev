@@ -51,6 +51,7 @@ public class UserController extends BaseController implements UserControllerApi 
     private AppUser getUser(String userId){
         // TODO 本方法后续公用，并且扩展
         AppUser user = userService.getUser(userId);
+
         return user;
     }
 
